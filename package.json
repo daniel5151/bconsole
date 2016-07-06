@@ -1,0 +1,25 @@
+{
+    "name": "bconsole",
+    "version": "1.0.0",
+    "description": "A better console using node.js in a terminal",
+    "main": "bconsole.js",
+    "keywords": [
+        "log",
+        "console",
+        "logging",
+        "error",
+        "warn",
+        "line number",
+        "groups"
+    ],
+    "repository": {
+        "url": "git@github.com:daniel5151/bconsole.git",
+        "type": "git"
+    },
+    "author": "daniel5151",
+    "maintainers": [{
+        "name": "Daniel Prilik",
+        "email": "daniel@prilik.ca"
+    }],
+    "license": "MIT"
+}
