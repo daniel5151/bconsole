@@ -1,5 +1,5 @@
 {
-    "esversion": 6,
+    "esversion": 5,
     "node": true,
     "sub": true,
     "laxbreak": true
