@@ -11,7 +11,7 @@ var bconsole = function bconsole(custom_options) {
 
     // define default options and incorporate custom options
     var default_options = {
-        pad_to: 24,
+        pad_to: 16,
         color: true
     };
 
@@ -25,6 +25,11 @@ var bconsole = function bconsole(custom_options) {
             case "color":
                 val = !!val;
                 break;
+            case "groups":
+                // tecnically, this isn't an option,
+                // but this is a good place to put it...
+
+                break;
         }
         options[opt] = val;
     };
@@ -34,6 +39,17 @@ var bconsole = function bconsole(custom_options) {
             result.setOption(opt, custom_options[opt]);
         });
     }
+
+    // Generate a blank groups object that contains switches for what groups are on or off
+    var groups = {};
+
+    result.toggleGroup = function(group, state) {
+        if (typeof state !== "boolean") {
+            if (typeof groups[group] !== "undefined") state = !groups[group];
+            else state = true;
+        }
+        groups[group] = state;
+    };
 
     var Log = Error; // Why? Magic...
     Log.prototype.write = function(streamname, logtype, logtype_color, higlight_color, usegroup, args_to_print) {
@@ -50,7 +66,7 @@ var bconsole = function bconsole(custom_options) {
             group = args_to_print.shift().toString();
 
             // skip groups toggled off
-            if (typeof result.group[group] === "undefined" || result.group[group] === false) return;
+            if (typeof groups[group] === "undefined" || groups[group] === false) return;
         } else {
             group = "";
         }
@@ -192,8 +208,9 @@ var bconsole = function bconsole(custom_options) {
         result[method] = logMethod(method);
     });
 
-    // Generate a blank groups objct that the user can populate
-    result.group = {};
+
+
+
 
     return result; // expose
 };
