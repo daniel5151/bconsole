@@ -2,22 +2,41 @@
 
 var util = require('util');
 
+var RESETCOLOR = "\x1b[0m";
+
 // Uses http://stackoverflow.com/a/14842659 as a foundation
-var bconsole = function(options) {
+var bconsole = function bconsole(custom_options) {
+    // Define final object to be returned
+    var result = {};
+
+    // define default options and incorporate custom options
     var default_options = {
         pad_to: 24,
-        max_lineno_digits: 4,
+        color: true
     };
 
-    if (typeof options === "object") {
-        Object.keys(options).forEach(function(key) {
-            default_options[key] = options[key];
+    var options = default_options;
+
+    result.setOption = function(opt, val) {
+        switch (opt) {
+            case "pad_to":
+                val = Math.max(val, 0) | 0;
+                break;
+            case "color":
+                val = !!val;
+                break;
+        }
+        options[opt] = val;
+    };
+
+    if ((typeof custom_options === "undefined" ? "undefined" : typeof custom_options) === "object") {
+        Object.keys(custom_options).forEach(function(opt) {
+            result.setOption(opt, custom_options[opt]);
         });
     }
-    options = default_options;
 
     var Log = Error; // Why? Magic...
-    Log.prototype.write = function(streamname, postfix, higlight, usegroup, args_to_print) {
+    Log.prototype.write = function(streamname, logtype, logtype_color, higlight_color, usegroup, args_to_print) {
         // Get Line number
         var m = /(.*):(\d+):(\d+)/.exec(extractLineNumberFromStack(this.stack));
 
@@ -36,42 +55,70 @@ var bconsole = function(options) {
             group = "";
         }
 
-        // Calculate number of chars to print pre-group
-        var chars_wo_group = (`[${line_num}] ${postfix}`).length - 6; // -6 because of color chars
+        var color_char_offset = 0;
 
-        var max_group_chars = options.pad_to - chars_wo_group;
-
-
-
-        if (group.length > max_group_chars)
-            group = group.slice(0, -2 + (max_group_chars - group.length)) + "..";
-
-        var lineAndPrefixLength = (
-            line_num +
-            (group ? group + " - " : "") +
-            postfix + "|"
-        ).length - 8; // -8 because of color chars
-
-
-        if (usegroup) group = "\x1b[32m" + group + "\x1b[0m - ";
-
-        var fullprefix =
-            "[" + line_num + "]" +
-            " ".repeat(Math.max(options.pad_to - lineAndPrefixLength, 0)) +
-            group +
-            postfix;
-
-        // Check if ew need to add higlighting
-        if (higlight) {
-            args_to_print.unshift(higlight[0]);
-            args_to_print.push(higlight[1]);
+        // Add color to logtype
+        if (options.color) {
+            logtype = logtype_color + logtype + RESETCOLOR;
+            color_char_offset += (logtype_color + RESETCOLOR).length;
         }
 
-        process[streamname].write(fullprefix + " | " + args_to_print.map(function(x) {
+        // Calculate number of chars that will be printed without including group
+        var chars_wo_group = ("[" + line_num + "] " + logtype).length - color_char_offset; // -9 because of color chars
+
+        var max_group_chars = options.pad_to - chars_wo_group - 3; // -3 because of " - "
+
+        // We may need to truncate (or even get rid of) the group name
+        if (group.length > max_group_chars) {
+            if (max_group_chars == 2) {
+                group = group.charAt(0) + ".";
+            } else if (max_group_chars == 1) {
+                group = group.charAt(0);
+            } else if (max_group_chars < 1) {
+                // don't show the group if there is not enough space
+                group = "";
+                usegroup = false;
+            } else {
+                group = group.slice(0, -2 + (max_group_chars - group.length)) + "..";
+            }
+        }
+
+        // Calculate number of chars that will be printed with group
+        // (necessary for calculating how many spaces will be needed for spacing)
+        var chars_w_group = ("[" + line_num + "] " + (usegroup ? group + " - " : "") + logtype).length - color_char_offset;
+
+        var group_color = "\x1b[32m";
+
+        // Add color to group and " - "
+        if (usegroup) {
+            if (options.color) group = group_color + group + RESETCOLOR;
+            group = group + " - ";
+        }
+
+        var full_prefix =
+            "[" + line_num + "] " +
+            " ".repeat(Math.max(options.pad_to - chars_w_group, 0)) +
+            group +
+            logtype;
+
+        // But what if we don't want color?!
+        if (options.color === false) {
+            full_prefix.replace(/\x1b\[\d*m/g, "");
+        }
+
+        // Check if ew need to add higlighting
+        if (higlight_color && options.color) {
+            args_to_print.unshift(higlight_color);
+            args_to_print.push(RESETCOLOR);
+        }
+
+        process[streamname].write(
+            full_prefix + " | " +
+            args_to_print.map(function(x) {
                 if (typeof x === "string") return x;
                 return util.inspect(x, {
                     depth: null,
-                    colors: true
+                    colors: options.color
                 });
             })
             .join(" ")
@@ -93,47 +140,52 @@ var bconsole = function(options) {
     // method builder
     function logMethod(method) {
         var streamname,
-            prefix,
+            logtype,
+            logtype_color,
             usegroup = false,
-            higlight = false;
+            higlight_color = false;
 
         switch (method) {
             case "glog":
                 usegroup = true;
+                /* falls through */
             case "log":
                 streamname = "stdout";
-                prefix = "\x1b[36mLog\x1b[0m";
+                logtype = "Log";
+                logtype_color = "\x1b[36m"; // blue fg
                 break;
             case "gerror":
                 usegroup = true;
+                /* falls through */
             case "error":
                 streamname = "stderr";
-                prefix = "\x1b[31mErr\x1b[0m";
-                higlight = ["\x1b[41m", "\x1b[0m"]; // red
+                logtype = "Err";
+                logtype_color = "\x1b[31m"; // reg fg
+                higlight_color = "\x1b[41m"; // red bg
                 break;
             case "gwarn":
                 usegroup = true;
+                /* falls through */
             case "warn":
                 streamname = "stderr";
-                prefix = "\x1b[33mWrn\x1b[0m";
-                higlight = ["\x1b[43m", "\x1b[0m"]; // yellow
+                logtype = "Wrn";
+                logtype_color = "\x1b[33m"; // yellow fg
+                higlight_color = "\x1b[43m"; // yellow bg
                 break;
         }
 
-        // Actual function that gets called when calling bconsole.XXX()
+        // Actual function that gets called when calling bconsole.whatever()
         return function() {
             for (var _len2 = arguments.length, args = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
                 args[_key2] = arguments[_key2];
             }
 
             // call handler extension which provides stack trace
-            Log().write(streamname, prefix, higlight, usegroup, args);
+            Log().write(streamname, logtype, logtype_color, higlight_color, usegroup, args);
         };
     }
 
     // -- final buildup -- //
-
-    var result = {};
 
     // build up the different types of logs
     ['log', 'error', 'warn', 'glog', 'gerror', 'gwarn'].forEach(function(method) {
