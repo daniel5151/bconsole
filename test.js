@@ -22,9 +22,9 @@ bconsole.glog(0, "Won't print");
 // Groups can be strings too
 bconsole.toggleGroup("strings");
 
-bconsole.glog('string', "Logging from group 'string'");
-bconsole.gwarn('string', "Warning from group 'string'");
-bconsole.gerror('string', "Error from group 'string'");
+bconsole.glog('strings', "Logging from group 'strings'");
+bconsole.gwarn('strings', "Warning from group 'strings'");
+bconsole.gerror('strings', "Error from group 'strings'");
 
 // Logs objects using util.inspect()
 bconsole.log({
