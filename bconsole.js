@@ -9,6 +9,17 @@ var bconsole = function bconsole(custom_options) {
     // Define final object to be returned
     var result = {};
 
+    // Generate a blank groups object that contains switches for what groups are on or off
+    var groups = {};
+
+    result.toggleGroup = function(group, state) {
+        if (typeof state !== "boolean") {
+            if (typeof groups[group] !== "undefined") state = !groups[group];
+            else state = true;
+        }
+        groups[group] = state;
+    };
+
     // define default options and incorporate custom options
     var default_options = {
         pad_to: 16,
@@ -28,7 +39,9 @@ var bconsole = function bconsole(custom_options) {
             case "groups":
                 // tecnically, this isn't an option,
                 // but this is a good place to put it...
-
+                Object.keys(val).forEach(function(group) {
+                    result.toggleGroup(group, val[group]);
+                });
                 break;
         }
         options[opt] = val;
@@ -39,17 +52,6 @@ var bconsole = function bconsole(custom_options) {
             result.setOption(opt, custom_options[opt]);
         });
     }
-
-    // Generate a blank groups object that contains switches for what groups are on or off
-    var groups = {};
-
-    result.toggleGroup = function(group, state) {
-        if (typeof state !== "boolean") {
-            if (typeof groups[group] !== "undefined") state = !groups[group];
-            else state = true;
-        }
-        groups[group] = state;
-    };
 
     var Log = Error; // Why? Magic...
     Log.prototype.write = function(streamname, logtype, logtype_color, higlight_color, usegroup, args_to_print) {

@@ -1,7 +1,7 @@
 {
     "name": "bconsole",
     "version": "1.0.0",
-    "description": "A better console using node.js in a terminal",
+    "description": "A better console for node.js in a terminal",
     "main": "bconsole.js",
     "keywords": [
         "log",
