@@ -96,3 +96,43 @@ Is a result of the following code:
 139 | bconsole.glog("strings", "Big Line Number Log")
 
 ```
+
+# Methods
+```js
+/* --------------- *
+ * Logging Methods *
+ * --------------- */
+
+// Unconditional logging, will always fire
+bconsole.log(..args)					
+bconsole.warn(..args)					
+bconsole.error(..args)					
+
+// Group based logging, will only fire if associated group is enabled
+bconsole.glog("group_name", ..args)	
+bconsole.gwarn("group_name", ..args)	
+bconsole.gerror("group_name", ..args)	
+
+/* -------------- *
+ * Option Methods *
+ * -------------- */
+ 
+bconsole.toggleGroup("group_name", true|false)	// Set group "group_name" to true / false
+												// If no state is given, will flip state of group
+bconsole.setOption("option_name", setting) 		// Change option to desired setting
+
+```
+
+# Default Options
+To override these options, when instantiating bconsole, pass is an object with any modified properties. To change properties after instantiation, use `bconsole.setOption`.
+```js
+{
+	pad_to: 16, 			/* int  */ // The number of chars before " | "
+    color: true, 			/* bool */ // Enable ANSI Color codes in output
+    groups: { 				/* obj  */ // Enable / Disable multiple groups at instantiation
+    	"testgroup": true,	/* bool */
+    	...
+	}
+}
+```
+*NOTE*: `groups` is a special option that can *only be passed in at instantiation!* To change enabled groups after the fact, use `bconsole.toggleGroup()`
