@@ -136,3 +136,11 @@ To override these options, when instantiating bconsole, pass is an object with a
 }
 ```
 *NOTE*: `groups` is a special option that can *only be passed in at instantiation!* To change enabled groups after the fact, use `bconsole.toggleGroup()`
+
+# Changelog
+
+## 1.0.1
+- Added option to output all logs to `stderr`
+
+## 1.0.0
+- Initial Release

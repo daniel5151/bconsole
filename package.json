@@ -1,6 +1,6 @@
 {
     "name": "bconsole",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A better console for node.js in a terminal",
     "main": "bconsole.js",
     "keywords": [

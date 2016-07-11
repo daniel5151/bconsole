@@ -23,7 +23,8 @@ var bconsole = function bconsole(custom_options) {
     // define default options and incorporate custom options
     var default_options = {
         pad_to: 16,
-        color: true
+        color: true,
+        log_to_stderr: false
     };
 
     var options = default_options;
@@ -129,6 +130,8 @@ var bconsole = function bconsole(custom_options) {
             args_to_print.unshift(higlight_color);
             args_to_print.push(RESETCOLOR);
         }
+
+        if (options.log_to_stderr) streamname = "stderr";
 
         process[streamname].write(
             full_prefix + " | " +
