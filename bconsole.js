@@ -34,11 +34,12 @@ var bconsole = function bconsole(custom_options) {
             case "pad_to":
                 val = Math.max(val, 0) | 0;
                 break;
+            case "log_to_stderr":
             case "color":
                 val = !!val;
                 break;
             case "groups":
-                // tecnically, this isn't an option,
+                // technically, this isn't an option,
                 // but this is a good place to put it...
                 Object.keys(val).forEach(function(group) {
                     result.toggleGroup(group, val[group]);

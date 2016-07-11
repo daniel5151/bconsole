@@ -127,9 +127,12 @@ bconsole.setOption("option_name", setting) 		// Change option to desired setting
 To override these options, when instantiating bconsole, pass is an object with any modified properties. To change properties after instantiation, use `bconsole.setOption`.
 ```js
 {
-	pad_to: 16, 			/* int  */ // The number of chars before " | "
-    color: true, 			/* bool */ // Enable ANSI Color codes in output
-    groups: { 				/* obj  */ // Enable / Disable multiple groups at instantiation
+	pad_to: 16, 			/* int  */ 	// The number of chars before " | "
+	color: true, 			/* bool */ 	// Enable ANSI Color codes in output
+	log_to_stderr: false	/* bool */ 	// By default, bconsole.log outputs to stdout
+										// This forces it to output to stderr
+
+	groups: { 				/* obj  */ 	// Enable / Disable multiple groups at instantiation
     	"testgroup": true,	/* bool */
     	...
 	}
